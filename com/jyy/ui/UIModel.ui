@@ -1,0 +1,1023 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1233</width>
+    <height>897</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QGraphicsView" name="graphicsViewCenter">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>150</y>
+      <width>721</width>
+      <height>521</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="back">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>690</y>
+      <width>101</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>上一张</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="next">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>690</y>
+      <width>101</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>下一张</string>
+    </property>
+   </widget>
+   <widget class="QGraphicsView" name="graphicsViewLeft">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>110</y>
+      <width>501</width>
+      <height>581</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QGraphicsView" name="graphicsViewRight">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>110</y>
+      <width>501</width>
+      <height>581</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1233</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="defaultUp">
+    <bool>true</bool>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>269</x>
+      <y>129</y>
+      <width>125</width>
+      <height>144</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="title">
+     <string>文件</string>
+    </property>
+    <addaction name="recentBrowse"/>
+    <addaction name="fileopen"/>
+    <addaction name="filesave"/>
+    <addaction name="exit"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="geometry">
+     <rect>
+      <x>309</x>
+      <y>129</y>
+      <width>120</width>
+      <height>182</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>编辑</string>
+    </property>
+    <addaction name="zoomUp"/>
+    <addaction name="zoomDown"/>
+    <addaction name="grayLevel"/>
+    <addaction name="lightLevel"/>
+    <addaction name="rotate"/>
+    <addaction name="printScreen"/>
+   </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>变换</string>
+    </property>
+    <addaction name="fourierTransform"/>
+    <addaction name="DCTTransformer"/>
+    <addaction name="RadomTransformer"/>
+   </widget>
+   <widget class="QMenu" name="menu_4">
+    <property name="title">
+     <string>噪声</string>
+    </property>
+    <addaction name="GaussNoise"/>
+    <addaction name="jiaoYanNoise"/>
+    <addaction name="splotNoise"/>
+    <addaction name="poissonNoise"/>
+   </widget>
+   <widget class="QMenu" name="menu_5">
+    <property name="title">
+     <string>滤波</string>
+    </property>
+    <addaction name="highPassFilter"/>
+    <addaction name="lowPassFilter"/>
+    <addaction name="smoothFilterLinear"/>
+    <addaction name="smoothFilterNoLinear"/>
+    <addaction name="sharpenFilterLinear"/>
+    <addaction name="sharpenFilterNoLinear"/>
+   </widget>
+   <widget class="QMenu" name="menu_6">
+    <property name="title">
+     <string>直方图统计</string>
+    </property>
+    <addaction name="RHistogram"/>
+    <addaction name="GHistogram"/>
+    <addaction name="BHistgram"/>
+   </widget>
+   <widget class="QMenu" name="menu_7">
+    <property name="title">
+     <string>图像增强</string>
+    </property>
+    <addaction name="noColorRenforce"/>
+    <addaction name="colorReinforce"/>
+    <addaction name="histogramBalance"/>
+    <addaction name="NTSCColorModel"/>
+    <addaction name="YCbCrColorModel"/>
+    <addaction name="HSVColorModel"/>
+   </widget>
+   <widget class="QMenu" name="thresholdValue">
+    <property name="title">
+     <string>阈值分割</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_9">
+    <property name="title">
+     <string>形态学处理</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="FeatuerExtraction">
+    <property name="title">
+     <string>特征提取</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_11">
+    <property name="title">
+     <string>图像分类与识别</string>
+    </property>
+    <addaction name="classfic"/>
+    <addaction name="recognize"/>
+   </widget>
+   <widget class="QMenu" name="about">
+    <property name="title">
+     <string>关于</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_8">
+    <property name="title">
+     <string>添加水印</string>
+    </property>
+    <addaction name="addTextMark"/>
+    <addaction name="addGraphMask"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
+   <addaction name="menu_4"/>
+   <addaction name="menu_5"/>
+   <addaction name="menu_6"/>
+   <addaction name="menu_7"/>
+   <addaction name="thresholdValue"/>
+   <addaction name="menu_9"/>
+   <addaction name="FeatuerExtraction"/>
+   <addaction name="menu_11"/>
+   <addaction name="about"/>
+   <addaction name="menu_8"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="fileopen">
+   <property name="text">
+    <string>打开</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="filesave">
+   <property name="text">
+    <string>保存</string>
+   </property>
+  </action>
+  <action name="exit">
+   <property name="text">
+    <string>退出</string>
+   </property>
+  </action>
+  <action name="zoomUp">
+   <property name="text">
+    <string>放大</string>
+   </property>
+  </action>
+  <action name="zoomDown">
+   <property name="text">
+    <string>缩小</string>
+   </property>
+  </action>
+  <action name="grayLevel">
+   <property name="text">
+    <string>灰度</string>
+   </property>
+  </action>
+  <action name="lightLevel">
+   <property name="text">
+    <string>亮度</string>
+   </property>
+  </action>
+  <action name="rotate">
+   <property name="text">
+    <string>旋转</string>
+   </property>
+  </action>
+  <action name="printScreen">
+   <property name="text">
+    <string>截图</string>
+   </property>
+  </action>
+  <action name="fourierTransform">
+   <property name="text">
+    <string>傅里叶变换</string>
+   </property>
+  </action>
+  <action name="DCTTransformer">
+   <property name="text">
+    <string>离散余弦变换</string>
+   </property>
+  </action>
+  <action name="RadomTransformer">
+   <property name="text">
+    <string>Radom变换</string>
+   </property>
+  </action>
+  <action name="GaussNoise">
+   <property name="text">
+    <string>高斯噪声</string>
+   </property>
+  </action>
+  <action name="jiaoYanNoise">
+   <property name="text">
+    <string>椒盐噪声</string>
+   </property>
+  </action>
+  <action name="splotNoise">
+   <property name="text">
+    <string>斑点噪声</string>
+   </property>
+  </action>
+  <action name="poissonNoise">
+   <property name="text">
+    <string>泊松噪声</string>
+   </property>
+  </action>
+  <action name="highPassFilter">
+   <property name="text">
+    <string>高通滤波</string>
+   </property>
+  </action>
+  <action name="lowPassFilter">
+   <property name="text">
+    <string>低通噪声</string>
+   </property>
+  </action>
+  <action name="smoothFilterLinear">
+   <property name="text">
+    <string>平滑滤波（线性）</string>
+   </property>
+  </action>
+  <action name="smoothFilterNoLinear">
+   <property name="text">
+    <string>平滑滤波（非线性)</string>
+   </property>
+  </action>
+  <action name="sharpenFilterLinear">
+   <property name="text">
+    <string>锐化滤波（线性）</string>
+   </property>
+  </action>
+  <action name="sharpenFilterNoLinear">
+   <property name="text">
+    <string>锐化滤波（非线性）</string>
+   </property>
+  </action>
+  <action name="RHistogram">
+   <property name="text">
+    <string>R直方图</string>
+   </property>
+  </action>
+  <action name="GHistogram">
+   <property name="text">
+    <string>G直方图</string>
+   </property>
+  </action>
+  <action name="BHistgram">
+   <property name="text">
+    <string>B直方图</string>
+   </property>
+  </action>
+  <action name="noColorRenforce">
+   <property name="text">
+    <string>伪彩色图像</string>
+   </property>
+  </action>
+  <action name="colorReinforce">
+   <property name="text">
+    <string>真彩色图像</string>
+   </property>
+  </action>
+  <action name="histogramBalance">
+   <property name="text">
+    <string>直方图均衡</string>
+   </property>
+  </action>
+  <action name="NTSCColorModel">
+   <property name="text">
+    <string>NTSC颜色模型</string>
+   </property>
+  </action>
+  <action name="YCbCrColorModel">
+   <property name="text">
+    <string>YCbCr颜色模型</string>
+   </property>
+  </action>
+  <action name="HSVColorModel">
+   <property name="text">
+    <string>HSV颜色模型</string>
+   </property>
+  </action>
+  <action name="classfic">
+   <property name="text">
+    <string>分类</string>
+   </property>
+  </action>
+  <action name="recognize">
+   <property name="text">
+    <string>识别</string>
+   </property>
+  </action>
+  <action name="recentBrowse">
+   <property name="text">
+    <string>最近浏览</string>
+   </property>
+  </action>
+  <action name="addTextMark">
+   <property name="text">
+    <string>添加文字水印</string>
+   </property>
+  </action>
+  <action name="addGraphMask">
+   <property name="text">
+    <string>添加图片水印</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>fileopen</sender>
+   <signal>triggered()</signal>
+   <receiver>filesave</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>recentBrowse</sender>
+   <signal>triggered()</signal>
+   <receiver>recentBrowse</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>exit</sender>
+   <signal>triggered()</signal>
+   <receiver>exit</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>filesave</sender>
+   <signal>triggered()</signal>
+   <receiver>filesave</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>MainWindow</sender>
+   <signal>destroyed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>update()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>616</x>
+     <y>448</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>616</x>
+     <y>448</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>classfic</sender>
+   <signal>triggered()</signal>
+   <receiver>classfic</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>recognize</sender>
+   <signal>triggered()</signal>
+   <receiver>recognize</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>poissonNoise</sender>
+   <signal>triggered()</signal>
+   <receiver>poissonNoise</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>splotNoise</sender>
+   <signal>triggered()</signal>
+   <receiver>splotNoise</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>jiaoYanNoise</sender>
+   <signal>triggered()</signal>
+   <receiver>jiaoYanNoise</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>GaussNoise</sender>
+   <signal>triggered()</signal>
+   <receiver>GaussNoise</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RadomTransformer</sender>
+   <signal>triggered()</signal>
+   <receiver>RadomTransformer</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>DCTTransformer</sender>
+   <signal>triggered()</signal>
+   <receiver>DCTTransformer</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fourierTransform</sender>
+   <signal>triggered()</signal>
+   <receiver>fourierTransform</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>printScreen</sender>
+   <signal>triggered()</signal>
+   <receiver>printScreen</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rotate</sender>
+   <signal>triggered()</signal>
+   <receiver>rotate</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lightLevel</sender>
+   <signal>triggered()</signal>
+   <receiver>lightLevel</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>grayLevel</sender>
+   <signal>triggered()</signal>
+   <receiver>grayLevel</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>zoomDown</sender>
+   <signal>triggered()</signal>
+   <receiver>zoomDown</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>zoomUp</sender>
+   <signal>triggered()</signal>
+   <receiver>zoomUp</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>HSVColorModel</sender>
+   <signal>triggered()</signal>
+   <receiver>HSVColorModel</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>YCbCrColorModel</sender>
+   <signal>triggered()</signal>
+   <receiver>YCbCrColorModel</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>NTSCColorModel</sender>
+   <signal>triggered()</signal>
+   <receiver>NTSCColorModel</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>histogramBalance</sender>
+   <signal>triggered()</signal>
+   <receiver>histogramBalance</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>colorReinforce</sender>
+   <signal>triggered()</signal>
+   <receiver>colorReinforce</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>noColorRenforce</sender>
+   <signal>triggered()</signal>
+   <receiver>noColorRenforce</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>BHistgram</sender>
+   <signal>triggered()</signal>
+   <receiver>BHistgram</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>GHistogram</sender>
+   <signal>triggered()</signal>
+   <receiver>GHistogram</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RHistogram</sender>
+   <signal>triggered()</signal>
+   <receiver>RHistogram</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sharpenFilterNoLinear</sender>
+   <signal>triggered()</signal>
+   <receiver>sharpenFilterNoLinear</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sharpenFilterLinear</sender>
+   <signal>triggered()</signal>
+   <receiver>sharpenFilterLinear</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>smoothFilterNoLinear</sender>
+   <signal>triggered()</signal>
+   <receiver>smoothFilterNoLinear</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>smoothFilterLinear</sender>
+   <signal>triggered()</signal>
+   <receiver>smoothFilterLinear</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lowPassFilter</sender>
+   <signal>triggered()</signal>
+   <receiver>lowPassFilter</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>highPassFilter</sender>
+   <signal>triggered()</signal>
+   <receiver>highPassFilter</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>next</sender>
+   <signal>clicked()</signal>
+   <receiver>next</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>850</x>
+     <y>743</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>850</x>
+     <y>743</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>back</sender>
+   <signal>clicked()</signal>
+   <receiver>back</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>570</x>
+     <y>743</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>570</x>
+     <y>743</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
