@@ -203,13 +203,11 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menu_9.menuAction())
         self.menubar.addAction(self.FeatuerExtraction.menuAction())
         self.menubar.addAction(self.menu_11.menuAction())
-        self.menubar.addAction(self.about.menuAction())
         self.menubar.addAction(self.menu_8.menuAction())
+        self.menubar.addAction(self.about.menuAction())
 
         self.retranslateUi(MainWindow)
-
         MainWindow.destroyed.connect(MainWindow.update)
-
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

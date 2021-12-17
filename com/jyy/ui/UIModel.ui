@@ -235,8 +235,8 @@
    <addaction name="menu_9"/>
    <addaction name="FeatuerExtraction"/>
    <addaction name="menu_11"/>
-   <addaction name="about"/>
    <addaction name="menu_8"/>
+   <addaction name="about"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="fileopen">

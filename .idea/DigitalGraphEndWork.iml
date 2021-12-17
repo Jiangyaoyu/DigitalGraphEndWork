@@ -5,4 +5,12 @@
     <orderEntry type="jdk" jdkName="Python 3.8 (ClassWork)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
+  <component name="PyNamespacePackagesService">
+    <option name="namespacePackageFolders">
+      <list>
+        <option value="$MODULE_DIR$/com/jyy/ui" />
+        <option value="$MODULE_DIR$/com/jyy/ui_python" />
+      </list>
+    </option>
+  </component>
 </module>
