@@ -20,10 +20,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowTitle('数字图像实验演示平台')
 
         # 定义并初始化成员变量
-        self.current_img = None
-        self.current_idx = -1
-        self.target_img = None
-        self.source_img_list = []
+        self.current_img = None #当前图片
+        self.current_idx = -1 #图片列表索引
+        self.target_img = None #
+        self.source_img_list = [] #图片列表
         self.cacheTxt = []  # 存放从缓存中读取的图片
 
 
@@ -35,7 +35,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.graphicsViewCenter.setHidden(True)
         self.graphicsViewCenter.setStyleSheet("border: 0px;background-color:#F0F0F0")#设置中间显示框的背景色，和边框
         self.imgCache_read()#读取缓存路径
-        print("history",len(self.cacheTxt))
+        print("初始化时历史记录个数：",len(self.cacheTxt))
         if len(self.cacheTxt) >0:
             self.history1.setText(self.cacheTxt[0])
         else:
@@ -55,19 +55,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.filesave.triggered.connect(self.save_event)
         self.classfic.triggered.connect(self.classfic.trigger)
         self.recognize.triggered.connect(self.recognize.trigger)
-        self.poissonNoise.triggered.connect(self.poissonNoise.trigger)
-        self.splotNoise.triggered.connect(self.splotNoise.trigger)
-        self.jiaoYanNoise.triggered.connect(self.jiaoYanNoise.trigger)
-        self.GaussNoise.triggered.connect(self.GaussNoise.trigger)
-        self.RadomTransformer.triggered.connect(self.RadomTransformer.trigger)
-        self.DCTTransformer.triggered.connect(self.DCTTransformer.trigger)
-        self.fourierTransform.triggered.connect(self.fourierTransform.trigger)
-        self.printScreen.triggered.connect(self.printScreen.trigger)
-        self.rotate.triggered.connect(self.rotate.trigger)
-        self.lightLevel.triggered.connect(self.lightLevel.trigger)
-        self.grayLevel.triggered.connect(self.grayLevel.trigger)
-        self.zoomDown.triggered.connect(self.zoomDown.trigger)
-        self.zoomUp.triggered.connect(self.zoomUp.trigger)
+        self.poissonNoise.triggered.connect(self.poissonNoise_event)
+        self.splotNoise.triggered.connect(self.splotNoise_event)
+        self.jiaoYanNoise.triggered.connect(self.jiaoYanNoise_event)
+        self.GaussNoise.triggered.connect(self.GaussNoise_event)
+        self.RadomTransformer.triggered.connect(self.RadomTransformer_event)
+        self.DCTTransformer.triggered.connect(self.DCTTransformer_event)
+        self.fourierTransform.triggered.connect(self.fourierTransform_event)
+        self.printScreen.triggered.connect(self.printScreen_event)
+        self.rotate.triggered.connect(self.rotate_event)
+        self.lightLevel.triggered.connect(self.lightLevel_event)
+        self.grayLevel.triggered.connect(self.grayLevel_event)
+        self.zoomDown.triggered.connect(self.zoomDown_event)
+        self.zoomUp.triggered.connect(self.zoomUp_event)
         self.HSVColorModel.triggered.connect(self.HSVColorModel.trigger)
         self.YCbCrColorModel.triggered.connect(self.YCbCrColorModel.trigger)
         self.NTSCColorModel.triggered.connect(self.NTSCColorModel.trigger)
@@ -89,6 +89,57 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.history2.triggered.connect(self.setHistory2_event)
         self.history3.triggered.connect(self.setHistory3_event)
 
+    #start 噪声
+
+    #高斯噪声
+    def GaussNoise_event(self):
+        print("高斯噪声")
+    #椒盐噪声
+    def jiaoYanNoise_event(self):
+        print("椒盐噪声")
+    #斑点噪声
+    def splotNoise_event(self):
+        print("斑点噪声")
+    #泊松噪声
+    def poissonNoise_event(self):
+        print("泊松噪声")
+    #end 噪声
+
+    #start 变换
+
+    #傅里叶变换
+    def fourierTransform_event(self):
+        print("傅里叶变换")
+    #离散余弦变换
+    def DCTTransformer_event(self):
+        print("离散余弦变换")
+    #Radom变换
+    def RadomTransformer_event(self):
+        print("Radom变换")
+
+    #end 变换
+
+    # start 编辑
+
+    #放大图片
+    def zoomUp_event(self):
+        print("放大")
+    #缩小图片
+    def zoomDown_event(self):
+        print("缩小")
+    #灰度
+    def grayLevel_event(self):
+        print("灰度")
+    #亮度调节
+    def lightLevel_event(self):
+        print("亮度")
+    #旋转功能
+    def rotate_event(self):
+        print("旋转")
+    #截图功能
+    def printScreen_event(self):
+        print("截图")
+    #end 编辑
     # 显示图片
     def showPic_fun(self, path, zoomscale, desPosition):
         img = cv.imread(path)  # 读取图像
@@ -106,11 +157,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         desPosition.setScene(self.scene)  # 将场景添加至视图
 
     def setHistory1_event(self):
+        print("点击历史记录1")
         self.current_img = self.history1.text()
         self.current_idx = len(self.source_img_list)
         self.source_img_list.append(self.current_img)
         self.graphicsViewCenter.setHidden(False)
-        self.showPic_fun(self.current_img, 1, self.graphicsViewCenter)
+        print("类路径：",self.current_img)
+        self.showPic_fun(self.current_img, 0.5, self.graphicsViewCenter)
     def setHistory2_event(self):
         self.current_img = self.history2.text()
         self.current_idx = len(self.source_img_list)
