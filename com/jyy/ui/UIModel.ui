@@ -187,7 +187,7 @@
      <x>0</x>
      <y>0</y>
      <width>1233</width>
-     <height>23</height>
+     <height>22</height>
     </rect>
    </property>
    <property name="defaultUp">
@@ -201,8 +201,8 @@
      <rect>
       <x>540</x>
       <y>137</y>
-      <width>125</width>
-      <height>144</height>
+      <width>119</width>
+      <height>126</height>
      </rect>
     </property>
     <property name="font">
@@ -231,8 +231,8 @@
      <rect>
       <x>359</x>
       <y>143</y>
-      <width>120</width>
-      <height>182</height>
+      <width>114</width>
+      <height>158</height>
      </rect>
     </property>
     <property name="title">
@@ -301,6 +301,8 @@
     <property name="title">
      <string>形态学处理</string>
     </property>
+    <addaction name="closeProcess"/>
+    <addaction name="openProcess"/>
    </widget>
    <widget class="QMenu" name="FeatuerExtraction">
     <property name="title">
@@ -534,6 +536,16 @@
   <action name="history3">
    <property name="text">
     <string>history3</string>
+   </property>
+  </action>
+  <action name="closeProcess">
+   <property name="text">
+    <string>闭运算</string>
+   </property>
+  </action>
+  <action name="openProcess">
+   <property name="text">
+    <string>开运算</string>
    </property>
   </action>
  </widget>
