@@ -30,7 +30,7 @@
    <widget class="QPushButton" name="back">
     <property name="geometry">
      <rect>
-      <x>400</x>
+      <x>90</x>
       <y>690</y>
       <width>101</width>
       <height>41</height>
@@ -48,7 +48,7 @@
    <widget class="QPushButton" name="next">
     <property name="geometry">
      <rect>
-      <x>730</x>
+      <x>380</x>
       <y>690</y>
       <width>101</width>
       <height>41</height>
@@ -147,37 +147,100 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
-   <widget class="QGraphicsView" name="graphicsViewRightTop">
+   <widget class="QPushButton" name="leftRightButton">
     <property name="geometry">
      <rect>
-      <x>780</x>
-      <y>30</y>
-      <width>421</width>
-      <height>241</height>
+      <x>580</x>
+      <y>342</y>
+      <width>81</width>
+      <height>31</height>
      </rect>
     </property>
-   </widget>
-   <widget class="QGraphicsView" name="graphicsViewRightCenter">
-    <property name="geometry">
-     <rect>
-      <x>780</x>
-      <y>550</y>
-      <width>421</width>
-      <height>241</height>
-     </rect>
+    <property name="text">
+     <string>→(移出)</string>
     </property>
    </widget>
-   <widget class="QGraphicsView" name="graphicsView_3">
+   <widget class="QPushButton" name="rightLeftButton">
     <property name="geometry">
      <rect>
-      <x>780</x>
-      <y>290</y>
-      <width>421</width>
-      <height>241</height>
+      <x>580</x>
+      <y>420</y>
+      <width>81</width>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="text">
+     <string>←(移入)</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="showCount">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>692</y>
+      <width>61</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Agency FB</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>1/9</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>70</y>
+      <width>71</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Agency FB</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>工作区</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>940</x>
+      <y>60</y>
+      <width>91</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Agency FB</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>显示区</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>
+  <widget class="QStatusBar" name="statusbar"/>
   <widget class="QMenuBar" name="menubar">
    <property name="enabled">
     <bool>true</bool>
@@ -199,8 +262,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>540</x>
-      <y>137</y>
+      <x>206</x>
+      <y>114</y>
       <width>119</width>
       <height>126</height>
      </rect>
@@ -229,8 +292,8 @@
    <widget class="QMenu" name="menu_2">
     <property name="geometry">
      <rect>
-      <x>359</x>
-      <y>143</y>
+      <x>246</x>
+      <y>114</y>
       <width>114</width>
       <height>158</height>
      </rect>
@@ -292,29 +355,17 @@
     <addaction name="YCbCrColorModel"/>
     <addaction name="HSVColorModel"/>
    </widget>
-   <widget class="QMenu" name="thresholdValue">
-    <property name="title">
-     <string>阈值分割</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="menu_9">
     <property name="title">
      <string>形态学处理</string>
     </property>
     <addaction name="closeProcess"/>
     <addaction name="openProcess"/>
-   </widget>
-   <widget class="QMenu" name="FeatuerExtraction">
-    <property name="title">
-     <string>特征提取</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menu_11">
-    <property name="title">
-     <string>图像分类与识别</string>
-    </property>
-    <addaction name="classfic"/>
-    <addaction name="recognize"/>
+    <addaction name="dilate"/>
+    <addaction name="erode"/>
+    <addaction name="xingtaiixuetidu"/>
+    <addaction name="dingmao"/>
+    <addaction name="heimao"/>
    </widget>
    <widget class="QMenu" name="about">
     <property name="title">
@@ -326,7 +377,14 @@
      <string>添加水印</string>
     </property>
     <addaction name="addTextMark"/>
-    <addaction name="addGraphMask"/>
+   </widget>
+   <widget class="QMenu" name="other">
+    <property name="title">
+     <string>其他</string>
+    </property>
+    <addaction name="thresholdValue"/>
+    <addaction name="FeatureExtraction"/>
+    <addaction name="ImgClassfiyAndRcong"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -335,14 +393,11 @@
    <addaction name="menu_5"/>
    <addaction name="menu_6"/>
    <addaction name="menu_7"/>
-   <addaction name="thresholdValue"/>
    <addaction name="menu_9"/>
-   <addaction name="FeatuerExtraction"/>
-   <addaction name="menu_11"/>
    <addaction name="menu_8"/>
+   <addaction name="other"/>
    <addaction name="about"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <action name="fileopen">
    <property name="text">
     <string>打开</string>
@@ -546,6 +601,46 @@
   <action name="openProcess">
    <property name="text">
     <string>开运算</string>
+   </property>
+  </action>
+  <action name="thresholdValue">
+   <property name="text">
+    <string>阈值分割</string>
+   </property>
+  </action>
+  <action name="FeatureExtraction">
+   <property name="text">
+    <string>特征提取</string>
+   </property>
+  </action>
+  <action name="ImgClassfiyAndRcong">
+   <property name="text">
+    <string>图像分类与识别</string>
+   </property>
+  </action>
+  <action name="dilate">
+   <property name="text">
+    <string>膨胀</string>
+   </property>
+  </action>
+  <action name="erode">
+   <property name="text">
+    <string>腐蚀</string>
+   </property>
+  </action>
+  <action name="xingtaiixuetidu">
+   <property name="text">
+    <string>形态学梯度</string>
+   </property>
+  </action>
+  <action name="dingmao">
+   <property name="text">
+    <string>顶帽</string>
+   </property>
+  </action>
+  <action name="heimao">
+   <property name="text">
+    <string>黑帽</string>
    </property>
   </action>
  </widget>
@@ -1204,6 +1299,198 @@
     <hint type="destinationlabel">
      <x>615</x>
      <y>803</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>closeProcess</sender>
+   <signal>triggered()</signal>
+   <receiver>closeProcess</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>openProcess</sender>
+   <signal>triggered()</signal>
+   <receiver>openProcess</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>FeatureExtraction</sender>
+   <signal>triggered()</signal>
+   <receiver>FeatureExtraction</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ImgClassfiyAndRcong</sender>
+   <signal>triggered()</signal>
+   <receiver>ImgClassfiyAndRcong</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>thresholdValue</sender>
+   <signal>triggered()</signal>
+   <receiver>thresholdValue</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>leftRightButton</sender>
+   <signal>clicked()</signal>
+   <receiver>leftRightButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>617</x>
+     <y>383</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>617</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rightLeftButton</sender>
+   <signal>clicked()</signal>
+   <receiver>rightLeftButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>617</x>
+     <y>443</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>617</x>
+     <y>443</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dilate</sender>
+   <signal>triggered()</signal>
+   <receiver>dilate</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dingmao</sender>
+   <signal>triggered()</signal>
+   <receiver>dingmao</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>erode</sender>
+   <signal>triggered()</signal>
+   <receiver>erode</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>xingtaiixuetidu</sender>
+   <signal>triggered()</signal>
+   <receiver>xingtaiixuetidu</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>heimao</sender>
+   <signal>triggered()</signal>
+   <receiver>heimao</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
     </hint>
    </hints>
   </connection>

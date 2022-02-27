@@ -4,6 +4,8 @@ from PyQt5.QtWidgets import *
 import sys
 import os
 import cv2
+
+from com.jyy.test import evaluate_one_image
 from com.jyy.ui_python.UIModel import Ui_MainWindow
 import cv2 as cv
 import numpy as np
@@ -11,6 +13,7 @@ import skimage
 from PIL import Image,ImageDraw,ImageFont,ImageFilter
 import traceback
 import matplotlib.pyplot as plt
+from screen_pic import ScreenShotsWin
 T = 8
 K = 8
 channel = 3
@@ -27,34 +30,40 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowTitle('数字图像实验演示平台')
 
         # 定义并初始化成员变量
-        self.current_img = None #当前图片
+        self.current_path = None #当前图片
+        self.current_img=None
+        self.right_path=None
+        self.right_img= None
         self.current_idx = -1 #图片列表索引
         self.target_img = None #
         self.source_img_list = [] #图片列表
         self.cacheTxt = []  # 存放从缓存中读取的图片
-
+        self.workCache= [] #存放在每次打开后移到左侧的所有图片 注意：存放的为读取后的图片数据，非图片路径
+        self.workIdx = -1 #工作区图片缓存列表索引
 
         #初始化隐藏组件
         self.next.setHidden(True)
         self.back.setHidden(True)
+        self.showCount.setHidden(True)
         self.graphicsViewLeft.setHidden(True)
         self.graphicsViewRight.setHidden(True)
         self.graphicsViewCenter.setHidden(True)
-        self.graphicsViewRightTop.setHidden(True)
-        self.graphicsViewRightCenter.setHidden(True)
-        self.graphicsViewRightBottom.setHidden(True)
+        self.label_2.setHidden(True)
+        self.label_3.setHidden(True)
         self.graphicsViewCenter.setStyleSheet("border: 0px;background-color:#F0F0F0")#设置中间显示框的背景色，和边框
         self.graphicsViewLeft.setStyleSheet("border: 0px;background-color:#F0F0F0")  # 设置中间显示框的背景色，和边框
         self.graphicsViewRight.setStyleSheet("border: 0px;background-color:#F0F0F0")  # 设置中间显示框的背景色，和边框
-        self.graphicsViewRightCenter.setStyleSheet("border: 0px;background-color:#F0F0F0")
-        self.graphicsViewRightBottom.setStyleSheet("border: 0px;background-color:#F0F0F0")
-        self.graphicsViewRightBottom.setStyleSheet("border: 0px;background-color:#F0F0F0")
         self.closeLightSlider(True)
-        self.lightSlider.setMaximum(200)
-        self.lightSlider.setMinimum(1)
+        self.rightLeftButton.setHidden(True)
+        self.leftRightButton.setHidden(True)
+        self.lightSlider.setMinimum(5)
+        self.lightSlider.setMaximum(15)
+        self.lightSlider.setSingleStep(0)
+        self.lightSlider.setPageStep(1)
+        self.lightSlider.setProperty("value", 10)
         self.imgCache_read()#读取缓存路径
         self.zoomscale=1
-        print("初始化时历史记录个数：",len(self.cacheTxt))
+        print("初始化时历史记录个数：", len(self.cacheTxt), len(self.workCache))
         if len(self.cacheTxt) >0:
             self.history1.setText(self.cacheTxt[0])
         else:
@@ -82,7 +91,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.DCTTransformer.triggered.connect(self.DCTTransformer_event)
         self.fourierTransform.triggered.connect(self.fourierTransform_event)
         self.printScreen.triggered.connect(self.printScreen_event)
-        self.rotate.triggered.connect(self.rotate_event)
+        self.rotate.triggered.connect(self.rotate90_event)
         self.lightLevel.triggered.connect(self.lightLevel_event)
         self.grayLevel.triggered.connect(self.grayLevel_event)
         self.zoomDown.triggered.connect(self.zoomDown_event)
@@ -102,218 +111,710 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.smoothFilterLinear.triggered.connect(self.smoothFilterLinear_event)
         self.lowPassFilter.triggered.connect(self.lowPassFilter_event)
         self.highPassFilter.triggered.connect(self.highPassFilter_event)
-        self.next.clicked.connect(self.next.click)
-        self.back.clicked.connect(self.back.click)
+        self.next.clicked.connect(self.next_event)
+        self.back.clicked.connect(self.back_event)
         self.history1.triggered.connect(self.setHistory1_event)
         self.history2.triggered.connect(self.setHistory2_event)
         self.history3.triggered.connect(self.setHistory3_event)
         self.lightSlider.valueChanged['int'].connect(self.lightSlider_event)
         self.rotateSlider.valueChanged['int'].connect(self.rotate_event)
+        self.closeProcess.triggered.connect(self.closeProces_event)
+        self.openProcess.triggered.connect(self.openProcess_event)
+        self.FeatureExtraction.triggered.connect(self.FeatuerExtraction_event)
+        self.ImgClassfiyAndRcong.triggered.connect(self.ImgClassfiyAndRcong_event)
+        self.thresholdValue.triggered.connect(self.thresholdValue_event)
+        self.leftRightButton.clicked.connect(self.leftRightButton_event)
+        self.rightLeftButton.clicked.connect(self.rightLeftButton_event)
+        self.addTextMark.triggered.connect(self.addTextMark_event)
+        self.dilate.triggered.connect(self.dilate_event)
+        self.dingmao.triggered.connect(self.dingmao_event)
+        self.erode.triggered.connect(self.erode_event)
+        self.xingtaiixuetidu.triggered.connect(self.xingtaiixuetidu_event)
+        self.heimao.triggered.connect(self.heimao_event)
 
+    def dilate_event(self):#膨胀
+        print("dilate_event")
+        img = cv2.imread(self.current_path, 1)
+        # 结构元素
+        kernel = cv2.getStructuringElement(cv.MORPH_RECT, (3, 3))
+        # 膨胀图像
+        res = cv2.dilate(img, kernel)
+        self.saveVariable(self.current_path, '', '', res)
+        self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+        self.closeLightSlider(True)
+        self.graphicsViewRight.setHidden(False)
+        self.showPicByImg_fun(res, 1, self.graphicsViewRight)
+        self.graphicsViewLeft.setHidden(False)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+    def dingmao_event(self):
+        print("dingmao_event")
+        img = cv2.imread(self.current_path, 1)
+        H, W, C = img.shape
+        # # Otsu binary
+        # # Grayscale
+        out = 0.2126 * img[..., 2] + 0.7152 * img[..., 1] + 0.0722 * img[..., 0]
+        out = out.astype(np.uint8)
+        # Determine threshold of Otsu's binarization
+        max_sigma = 0
+        max_t = 0
+        for _t in range(1, 255):
+            v0 = out[np.where(out < _t)]
+            m0 = np.mean(v0) if len(v0) > 0 else 0.
+            w0 = len(v0) / (H * W)
+            v1 = out[np.where(out >= _t)]
+            m1 = np.mean(v1) if len(v1) > 0 else 0.
+            w1 = len(v1) / (H * W)
+            sigma = w0 * w1 * ((m0 - m1) ** 2)
+            if sigma > max_sigma:
+                max_sigma = sigma
+                max_t = _t
+        # Binarization
+        th = max_t
+        out[out < th] = 0
+        out[out >= th] = 255
+        # 设置卷积核
+        kernel = np.ones((3, 3), np.uint8)
+        # 顶帽运算
+        dst = cv2.morphologyEx(out, cv2.MORPH_TOPHAT, kernel)
+        self.saveVariable(self.current_path, '', '', dst)
+        self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+        self.closeLightSlider(True)
+        self.graphicsViewRight.setHidden(False)
+        self.showPicByImg_fun(dst, 1, self.graphicsViewRight)
+        self.graphicsViewLeft.setHidden(False)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+    def erode_event(self):#腐蚀
+        print("erode_event腐蚀")
+        img = cv2.imread(self.current_path, 1)
+        # 结构元素
+        kernel = cv2.getStructuringElement(cv.MORPH_RECT, (3, 3))
+        # 腐蚀图像
+        res = cv2.erode(img, kernel)
+        self.saveVariable(self.current_path, '', '', res)
+        self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+        self.closeLightSlider(True)
+        self.graphicsViewRight.setHidden(False)
+        self.showPicByImg_fun(res, 1, self.graphicsViewRight)
+        self.graphicsViewLeft.setHidden(False)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+    def xingtaiixuetidu_event(self):
+        print("xingtaiixuetidu_event")
+        img = cv2.imread(self.current_path, 1)
+        kernel = np.ones((3, 3), np.uint8)
+        img = cv.morphologyEx(img, cv.MORPH_GRADIENT, kernel)
+        self.saveVariable(self.current_path, '', '', img)
+        self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+        self.closeLightSlider(True)
+        self.graphicsViewRight.setHidden(False)
+        self.showPicByImg_fun(img, 1, self.graphicsViewRight)
+        self.graphicsViewLeft.setHidden(False)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+    def heimao_event(self):
+        print("heimao_event")
+        img = cv2.imread(self.current_path, 1)
+        H, W, C = img.shape
+        # Otsu binary
+        # Grayscale
+        out = 0.2126 * img[..., 2] + 0.7152 * img[..., 1] + 0.0722 * img[..., 0]
+        out = out.astype(np.uint8)
+        # Determine threshold of Otsu's binarization
+        max_sigma = 0
+        max_t = 0
+        for _t in range(1, 255):
+            v0 = out[np.where(out < _t)]
+            m0 = np.mean(v0) if len(v0) > 0 else 0.
+            w0 = len(v0) / (H * W)
+            v1 = out[np.where(out >= _t)]
+            m1 = np.mean(v1) if len(v1) > 0 else 0.
+            w1 = len(v1) / (H * W)
+            sigma = w0 * w1 * ((m0 - m1) ** 2)
+            if sigma > max_sigma:
+                max_sigma = sigma
+                max_t = _t
+        # Binarization
+        th = max_t
+        out[out < th] = 0
+        out[out >= th] = 255
+        # 设置卷积核
+        kernel = np.ones((3, 3), np.uint8)
+        # 黑帽运算
+        dst = cv2.morphologyEx(out, cv2.MORPH_BLACKHAT, kernel)
+        self.saveVariable(self.current_path, '', '', dst)
+        self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+        self.closeLightSlider(True)
+        self.graphicsViewRight.setHidden(False)
+        self.showPicByImg_fun(dst, 1, self.graphicsViewRight)
+        self.graphicsViewLeft.setHidden(False)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+    def next_event(self):
+        print("next_event")
+        print("debug")
+        print(self.workIdx)
+        if(self.workIdx<len(self.workCache)-1):
+            self.current_path = self.workCache[self.workIdx+1]
+            self.showCount.setText('{}/{}'.format(self.workIdx+1,len(self.workCache)))
+            self.workIdx += 1
+        else:
+            print("next_else",self.workIdx,len(self.workCache))
+            self.current_path = self.workCache[self.workIdx]
+            print(self.current_path)
+            self.showCount.setText('{}/{}'.format(self.workIdx+1, len(self.workCache)))
+        self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+        self.closeLightSlider(True)
+        self.graphicsViewLeft.setHidden(False)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+    def back_event(self):
+        print("back_event")
+        print("debug")
+        print(self.workIdx)
+        if (self.workIdx >0):
+            self.current_path = self.workCache[self.workIdx-1]
+            self.showCount.setText('{}/{}'.format(self.workIdx -1, len(self.workCache)))
+            self.workIdx -=1
+        else:
+
+            self.current_path = self.workCache[self.workIdx]
+            self.showCount.setText('{}/{}'.format(self.workIdx+1, len(self.workCache)))
+        self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+        self.closeLightSlider(True)
+        self.graphicsViewLeft.setHidden(False)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+    def leftRightButton_event(self):
+        print("leftRightButton_event")
+        # self.graphicsViewLeft.setHidden(True)
+        self.right_path=self.current_path
+        if self.workIdx>0:
+            self.workIdx -= 1
+            self.workCache.remove(self.workCache[self.workIdx+1])
+            self.showCount.setText('{}/{}'.format(self.workIdx + 1, len(self.workCache)))
+            self.current_path = self.workCache[self.workIdx]
+        else:
+            return
+        #self.current_path=''
+        self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+        self.closeLightSlider(True)
+        self.graphicsViewRight.setHidden(False)
+        self.showPic_fun(self.right_path, 1, self.graphicsViewRight)
+        self.graphicsViewLeft.setHidden(False)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+    def rightLeftButton_event(self):
+        print("rightLeftButton_event")
+        print('self_right_path:', self.right_path, 'self_current_path:', self.current_path)
+        # self.graphicsViewRight.setHidden(True)
+        if self.right_path=='' and self.right_img!='':
+            self.current_idx += 1
+            self.workIdx +=1
+            self.showCount.setText('{}/{}'.format(self.workIdx +1, len(self.workCache)))
+            cv2.imwrite("./cache/tranformer_{}.jpg".format(self.current_idx),self.right_img)
+            self.current_path="./cache/tranformer_{}.jpg".format(self.current_idx)
+            self.workCache.append(self.current_path)  # 加入工作区缓存
+            self.current_img = self.right_img
+            self.right_img=''
+            self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+            self.closeLightSlider(True)
+            self.graphicsViewRight.setHidden(False)
+            self.showPicByImg_fun(self.right_img, 1, self.graphicsViewRight)
+            self.graphicsViewLeft.setHidden(False)
+            self.showPicByImg_fun(self.current_img, 1, self.graphicsViewLeft)
+        if self.right_img=='' and self.right_path!='':
+            self.current_idx += 1
+            self.workIdx += 1
+            self.showCount.setText('{}/{}'.format(self.workIdx + 1, len(self.workCache)))
+            img = cv2.imread(self.right_path)
+            cv2.imwrite("./cache/tranformer_{}.jpg".format(self.current_idx), img)
+            self.workCache.append("./cache/tranformer_{}.jpg".format(self.current_idx))#加入工作区缓存
+            self.current_path = self.right_path
+            self.right_path=''
+            self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+            self.closeLightSlider(True)
+            #self.graphicsViewRight.setHidden(False)
+            #self.showPic_fun(self.right_path, 1, self.graphicsViewRight)
+            self.graphicsViewLeft.setHidden(False)
+            self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+        else :
+            return
+    def saveVariable(self,current_path,current_img,right_path,right_img):
+        self.current_path=current_path
+        self.current_img=current_img
+        self.right_path=right_path
+        self.right_img=right_img
+    #添加水印
+    def addTextMark_event(self):
+        print("addTextMark_event")
+        im_before = Image.open(self.current_path)
+        draw = ImageDraw.Draw(im_before)
+        myfont = ImageFont.truetype('C:/windows/fonts/simhei.ttf', size=50)
+        fillcolor = "#ff0000"
+        value, ok = QInputDialog.getText(self, '水印', '请输入添加的水印', QLineEdit.Normal, '添加水印')
+        draw.text((100, 8), value, font=myfont, fill=fillcolor)
+        im_before.save('./cache/addTextMark.png')
+        self.saveVariable(self.current_path,'','./cache/addTextMark.png','')
+        self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+        self.closeLightSlider(True)
+        self.graphicsViewRight.setHidden(False)
+        self.showPic_fun('./cache/addTextMark.png', 1, self.graphicsViewRight)
+        self.graphicsViewLeft.setHidden(False)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+    #形态学处理
+    def closeProces_event(self):
+        print("closeProces_event")
+        img = cv2.imread(self.current_path, 1)
+        # OpenCV定义的结构元素
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+        closed = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+        self.saveVariable(self.current_path,'','',closed)
+        self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+        self.closeLightSlider(True)
+        self.graphicsViewRight.setHidden(False)
+        self.showPicByImg_fun(closed, 1, self.graphicsViewRight)
+        self.graphicsViewLeft.setHidden(False)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+    def openProcess_event(self):
+        print("openProcess_event")
+        img = cv2.imread(self.current_path, 1)
+        # OpenCV定义的结构元素
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+         # 开运算
+        opened = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+        self.saveVariable(self.current_path,'','',opened)
+        self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+        self.closeLightSlider(True)
+        self.graphicsViewRight.setHidden(False)
+        self.showPicByImg_fun(opened, 1, self.graphicsViewRight)
+        self.graphicsViewLeft.setHidden(False)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+        # 显示腐蚀后的图像
+    #特征提取
+    def FeatuerExtraction_event(self):
+        print("FeatuerExtraction_event")
+        img = cv2.imread(self.current_path)
+        # kaze检测
+        kaze = cv2.KAZE_create()
+        keypoints = kaze.detect(img, None)
+        img1 = img.copy()
+        kaze_img = cv2.drawKeypoints(img, keypoints, img1, color=(0, 255, 0))
+        self.saveVariable(self.current_path,'','',kaze_img)
+        self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+        self.closeLightSlider(True)
+        self.graphicsViewRight.setHidden(False)
+        self.showPicByImg_fun(kaze_img, 1, self.graphicsViewRight)
+        self.graphicsViewLeft.setHidden(False)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+    #图像分类与识别
+    def ImgClassfiyAndRcong_event(self):
+        print("ImgClassfiyAndRcong_event")
+        img = Image.open(self.current_path)
+        imag = img.resize([100, 100])
+        image = np.array(imag)
+        text = evaluate_one_image(image)
+        QMessageBox.warning(self, "识别结果", text, QMessageBox.Yes)
+    #阈值分割
+    def thresholdValue_event(self):
+        print("阈值分割")
+        img = cv2.imread(self.current_path, 0)  # 0是第二个参数，将其转为灰度图
+        value, ok = QInputDialog.getText(self, "阈值分割", "输入阈值大小:", QLineEdit.Normal, "130")
+
+        c=np.int(value.replace(' ', ''))
+        # 利用cv2.threshhold()函数进行简单阈值分割，第一个参数是待分割图像，第二个参数是阈值大小
+        # 第三个参数是赋值的像素值，第四个参数是阈值分割方法
+        ret, thresh1 = cv2.threshold(img, c, 255, cv2.THRESH_BINARY)
+        self.saveVariable(self.current_path,'','',thresh1)
+        self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+        self.closeLightSlider(True)
+        self.graphicsViewRight.setHidden(False)
+        self.showPicByImg_fun(thresh1, 1, self.graphicsViewRight)
+        self.graphicsViewLeft.setHidden(False)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     #start 色彩增强
     def noColorRenforce_event(self):
         print("伪色彩图像")
-        im_gray = cv2.imread(self.current_img, cv2.IMREAD_GRAYSCALE)
+        im_gray = cv2.imread(self.current_path, cv2.IMREAD_GRAYSCALE)
         im_color = cv2.applyColorMap(im_gray, cv2.COLORMAP_JET)
+        self.saveVariable(self.current_path,'','',im_color)
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPicByImg_fun(im_color, 0.5, self.graphicsViewRight)
+        self.showPicByImg_fun(im_color, 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     def colorReinforce_event(self):
         print("真色彩图像")
-        im_gray = cv2.imread(self.current_img, cv2.IMREAD_GRAYSCALE)
-        im_color = cv2.applyColorMap(im_gray, cv2.COLORMAP_JET)
+        # RGB到HSI的变换
+        def rgb2hsi(image):
+            b, g, r = cv.split(image)  # 读取通道
+            r = r / 255.0  # 归一化
+            g = g / 255.0
+            b = b / 255.0
+            eps = 1e-6  # 防止除零
+
+            img_i = (r + g + b) / 3  # I分量
+
+            img_h = np.zeros(r.shape, dtype=np.float32)
+            img_s = np.zeros(r.shape, dtype=np.float32)
+            min_rgb = np.zeros(r.shape, dtype=np.float32)
+            # 获取RGB中最小值
+            min_rgb = np.where((r <= g) & (r <= b), r, min_rgb)
+            min_rgb = np.where((g <= r) & (g <= b), g, min_rgb)
+            min_rgb = np.where((b <= g) & (b <= r), b, min_rgb)
+            img_s = 1 - 3 * min_rgb / (r + g + b + eps)  # S分量
+
+            num = ((r - g) + (r - b)) / 2
+            den = np.sqrt((r - g) ** 2 + (r - b) * (g - b))
+            theta = np.arccos(num / (den + eps))
+            img_h = np.where((b - g) > 0, 2 * np.pi - theta, theta)  # H分量
+            img_h = np.where(img_s == 0, 0, img_h)
+
+            img_h = img_h / (2 * np.pi)  # 归一化
+            temp_s = img_s - np.min(img_s)
+            temp_i = img_i - np.min(img_i)
+            img_s = temp_s / np.max(temp_s)
+            img_i = temp_i / np.max(temp_i)
+
+            image_hsi = cv.merge([img_h, img_s, img_i])
+            # return img_h, img_s, img_i, image_hsi
+            return image_hsi
+
+        # HSI到RGB的变换
+        def hsi2rgb(image_hsi):
+            eps = 1e-6
+            img_h, img_s, img_i = cv.split(image_hsi)
+
+            image_out = np.zeros((img_h.shape[0], img_h.shape[1], 3))
+            img_h = img_h * 2 * np.pi
+            # print(img_h)
+
+            img_r = np.zeros(img_h.shape, dtype=np.float32)
+            img_g = np.zeros(img_h.shape, dtype=np.float32)
+            img_b = np.zeros(img_h.shape, dtype=np.float32)
+
+            # 扇区1
+            img_b = np.where((img_h >= 0) & (img_h < 2 * np.pi / 3), img_i * (1 - img_s), img_b)
+            img_r = np.where((img_h >= 0) & (img_h < 2 * np.pi / 3),
+                             img_i * (1 + img_s * np.cos(img_h) / (np.cos(np.pi / 3 - img_h))), img_r)
+            img_g = np.where((img_h >= 0) & (img_h < 2 * np.pi / 3), 3 * img_i - (img_r + img_b), img_g)
+
+            # 扇区2                                                                                        # H=H-120°
+            img_r = np.where((img_h >= 2 * np.pi / 3) & (img_h < 4 * np.pi / 3), img_i * (1 - img_s), img_r)
+            img_g = np.where((img_h >= 2 * np.pi / 3) & (img_h < 4 * np.pi / 3),
+                             img_i * (1 + img_s * np.cos(img_h - 2 * np.pi / 3) / (np.cos(np.pi - img_h))), img_g)
+            img_b = np.where((img_h >= 2 * np.pi / 3) & (img_h < 4 * np.pi / 3), 3 * img_i - (img_r + img_g), img_b)
+
+            # 扇区3                                                                                        # H=H-240°
+            img_g = np.where((img_h >= 4 * np.pi / 3) & (img_h <= 2 * np.pi), img_i * (1 - img_s), img_g)
+            img_b = np.where((img_h >= 4 * np.pi / 3) & (img_h <= 2 * np.pi),
+                             img_i * (1 + img_s * np.cos(img_h - 4 * np.pi / 3) / (np.cos(5 * np.pi / 3 - img_h))),
+                             img_b)
+            img_r = np.where((img_h >= 4 * np.pi / 3) & (img_h <= 2 * np.pi), 3 * img_i - (img_b + img_g), img_r)
+
+            temp_r = img_r - np.min(img_r)
+            img_r = temp_r / np.max(temp_r)
+
+            temp_g = img_g - np.min(img_g)
+            img_g = temp_g / np.max(temp_g)
+
+            temp_b = img_b - np.min(img_b)
+            img_b = temp_b / np.max(temp_b)
+
+            image_out = cv.merge((img_b, img_g, img_r))  # 按RGB合并，后面不用转换通道
+            # print(image_out.shape)
+            return image_out
+
+        img = cv2.imread(self.current_path, cv2.IMREAD_UNCHANGED)
+        hsi = rgb2hsi(img)
+        hsi[:, :, 1] = hsi[:, :, 1] * 1.1
+        hsi[:, :, 2] = hsi[:, :, 2] * 1.8
+        out = hsi2rgb(hsi)
+
+        out = (out * 255).astype(np.uint8)
+        self.saveVariable(self.current_path,'','',out)
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPicByImg_fun(im_color, 0.5, self.graphicsViewRight)
+        self.showPicByImg_fun(out, 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     def histogramBalance_event(self):
         print("直方图均衡化")
-        img = cv2.imread(self.current_img, 1)
-        # 彩色图像均衡化,需要分解通道 对每一个通道均衡化
-        (b, g, r) = cv2.split(img)
-        bH = cv2.equalizeHist(b)
-        gH = cv2.equalizeHist(g)
-        rH = cv2.equalizeHist(r)
-        # 合并每一个通道
-        result = cv2.merge((rH, gH, bH))
+        img = cv2.imread(self.current_path, cv2.IMREAD_UNCHANGED)
+        # 通道分解
+        b = img[:, :, 0]
+        g = img[:, :, 1]
+        r = img[:, :, 2]
+
+        bH = cv.equalizeHist(b)
+        gH = cv.equalizeHist(g)
+        rH = cv.equalizeHist(r)
+
+        # 通道合成
+        img[:, :, 0] = bH
+        img[:, :, 1] = gH
+        img[:, :, 2] = rH
+
+        self.saveVariable(self.current_path,'','',img)
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPicByImg_fun(result, 0.5, self.graphicsViewRight)
+        self.showPicByImg_fun(img, 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     def NTSCColorModel_event(self):
         print("NTSC颜色模型")
-        img = cv2.imread(self.current_img, 1)
-        # 彩色图像均衡化,需要分解通道 对每一个通道均衡化
-        (b, g, r) = cv2.split(img)
-        bH = cv2.equalizeHist(b)
-        gH = cv2.equalizeHist(g)
-        rH = cv2.equalizeHist(r)
-        srcimg = cv2.merge([r, g, b])
-        # 合并每一个通道
-        result = cv2.merge((rH, gH, bH))
+        img = cv2.imread(self.current_path, cv2.IMREAD_UNCHANGED)
+
+        img_rows = int(img.shape[0])
+        img_cols = int(img.shape[1])
+        yiq_image = img.copy()
+        R, G, B = cv2.split(yiq_image)
+
+        for x in range(img_rows):
+            for y in range(img_cols):
+                right_matrix = np.array([[R[x, y]],
+                                         [G[x, y]],
+                                         [B[x, y]]])
+                left_matrix = np.array([[0.299, 0.587, 0.114],
+                                        [0.596, -0.275, -0.321],
+                                        [0.212, -0.528, 0.311]])
+                matrix = np.dot(left_matrix, right_matrix)
+                r = matrix[0][0]
+                g = matrix[1][0]
+                b = matrix[2][0]
+                yiq_image[x, y] = (r, g, b)
+
+        '''-----------------YIQ → RGB------------------------'''
+        img_row = int(yiq_image.shape[0])
+        img_col = int(yiq_image.shape[1])
+        rgb_image = yiq_image.copy()
+        Y, I, Q = cv.split(rgb_image)
+        for x in range(img_row):
+            for y in range(img_col):
+                right_matrix = np.array([[Y[x, y]],
+                                         [I[x, y]],
+                                         [Q[x, y]]])
+                left_matrix = np.array([[1, 0.956, 0.620],
+                                        [1, -0.272, -0.647],
+                                        [1, -1.108, 1.705]])
+                matrix = np.dot(left_matrix, right_matrix)
+                r = matrix[0][0]
+                g = matrix[1][0]
+                b = matrix[2][0]
+                rgb_image[x, y] = (r, g, b)
+        self.saveVariable(self.current_path,'','',rgb_image)
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPicByImg_fun(result, 0.5, self.graphicsViewRight)
+        self.showPicByImg_fun(rgb_image, 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+
+    def gamma_enhance(self, mat, gamma=0.9):
+        tar = mat.copy()
+        tar = tar * 1.0 / 255
+        tar = np.power(tar, gamma)
+        tar = (tar * 255).astype(np.uint8)
+        return tar
     def YCbCrColorModel_event(self):
         print("YCBCR颜色模型")
-        img = cv2.imread(self.current_img, 1)
-        YCrcbimage = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
+        img = cv2.imread(self.current_path, cv2.IMREAD_UNCHANGED)
+        gamma = 0.8
+        res = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)
+        res[:, :, 0] = self.gamma_enhance(res[:, :, 0], gamma)
+        res = cv2.cvtColor(res, cv2.COLOR_YCR_CB2BGR)
+        cv2.imwrite("cache/ycbcr.jpg", res)
+        self.saveVariable(self.current_path, '', 'cache/ycbcr.jpg', '')
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPicByImg_fun(YCrcbimage, 0.5, self.graphicsViewRight)
+        self.showPic_fun("cache/ycbcr.jpg", 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     def HSVColorModel_event(self):
         print("HSVC颜色模型")
-        img = cv2.imread(self.current_img, 1)
-        Hsvimage = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        img = cv2.imread(self.current_path, cv2.IMREAD_UNCHANGED)
+        gamma = 1.8
+
+        res = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        res[:, :, 1] = self.gamma_enhance(res[:, :, 1], gamma)
+        res = cv2.cvtColor(res, cv2.COLOR_HSV2BGR)
+        cv2.imwrite("cache/hsv.jpg",res)
+        self.saveVariable(self.current_path, '', "cache/hsv.jpg", '')
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPicByImg_fun(Hsvimage, 0.5, self.graphicsViewRight)
+        self.showPic_fun("cache/hsv.jpg", 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     #end 色彩增强
 
     #start 直方图
     def RHistogram_event(self):  # R直方图
         print("R")
-        im1 = Image.open(self.current_img)
+        im1 = Image.open(self.current_path)
         # 将RGB三个通道分开
         r, g, b = im1.split()
         ar = np.array(r).flatten()
         plt.cla()
-        print("debug0")
         plt.hist(ar, bins=256, color='gray')
         plt.savefig('./cache/R.png', dpi=65)
-        print("debug1")
+        self.saveVariable(self.current_path, '', './cache/R.png', '')
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
         self.showPic_fun('./cache/R.png', 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
 
     def GHistogram_event(self):  # G直方图
         print("G")
-        im1 = Image.open(self.current_img)
+        im1 = Image.open(self.current_path)
         # 将RGB三个通道分开
         r, g, b = im1.split()
         ag = np.array(g).flatten()
         plt.cla()
         plt.hist(ag, bins=256, color='gray')
         plt.savefig('./cache/G.png', dpi=65)
+        self.saveVariable(self.current_path, '', './cache/G.png', '')
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
         self.showPic_fun('./cache/G.png', 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
 
     def BHistgram_event(self):  # B直方图
         print("B")
-        im1 = Image.open(self.current_img)
+        im1 = Image.open(self.current_path)
         # 将RGB三个通道分开
         r, g, b = im1.split()
         ab = np.array(b).flatten()
         plt.cla()
         plt.hist(ab, bins=256,color='gray')
         plt.savefig('./cache/B.png', dpi=65)
+        self.saveVariable(self.current_path, '', './cache/B.png', '')
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
         self.showPic_fun('./cache/B.png', 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
 
     #end 直方图
     #start 滤波
     def highPassFilter_event(self):
         print("高通滤波")
         # 以灰度的方式加载图片
-        img = cv2.imread(self.current_img, 0)
-        # 使用OpenCV的高通滤波
-        blurred = cv2.GaussianBlur(img, (11, 11), 0)
-        g_hpf = img - blurred
+        img = cv2.imread(self.current_path, cv2.IMREAD_UNCHANGED)
+        img = np.mean(img, axis=2)
+        # img = self.toGray(img)
+
+        f = np.fft.fft2(img)
+        fshift = np.fft.fftshift(f)
+
+        # def highPassFiltering(img, size):  # 传递参数为傅里叶变换后的频谱图和滤波尺寸
+        #     h, w = img.shape[0:2]  # 获取图像属性
+        #     h1, w1 = int(h / 2), int(w / 2)  # 找到傅里叶频谱图的中心点
+        #     img[h1 - int(size / 2):h1 + int(size / 2), w1 - int(size / 2):w1 + int(size / 2)] = -1
+        #     img[h1, w1] = 8
+        #     # 中心点加减滤波尺寸的一半，刚好形成一个定义尺寸的滤波大小，然后设置为0
+        #     return img
+        #
+        # # 调用高通滤波函数
+        # img1 = highPassFiltering(fshift, 80)
+
+        rows, cols = img.shape
+        crow, ccol = int(rows / 2), int(cols / 2)
+        fshift[crow - 30:crow + 30, ccol - 30:ccol + 30] = 0
+        # 傅里叶逆变换
+        ishift = np.fft.ifftshift(fshift)
+        iimg = np.fft.ifft2(ishift)
+        iimg = np.abs(iimg)
+        cv2.imwrite("cache/gaotong.jpg",iimg)
+        self.saveVariable(self.current_path, '', 'cache/gaotong.jpg', '')
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPicByImg_fun(g_hpf, 0.5, self.graphicsViewRight)
+        self.showPic_fun('cache/gaotong.jpg', 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     def lowPassFilter_event(self):
         print("低通滤波")
-        img = cv2.imread(self.current_img, 0)
-        result = cv2.blur(img, (5, 5))
-        l_hpf = img - result
+        img = cv2.imread(self.current_path, cv2.IMREAD_UNCHANGED)
+        img = np.mean(img, axis=2)
+
+        # 傅里叶变换
+        dft = cv2.dft(np.float32(img), flags=cv2.DFT_COMPLEX_OUTPUT)
+        fshift = np.fft.fftshift(dft)
+
+        # 设置低通滤波器
+        rows, cols = img.shape
+        crow, ccol = int(rows / 2), int(cols / 2)  # 中心位置
+        mask = np.zeros((rows, cols, 2), np.uint8)
+        mask[crow - 30:crow + 30, ccol - 30:ccol + 30] = 1
+
+        # 掩膜图像和频谱图像乘积
+        f = fshift * mask
+        # 傅里叶逆变换
+        ishift = np.fft.ifftshift(f)
+        iimg = cv2.idft(ishift)
+        res = cv2.magnitude(iimg[:, :, 0], iimg[:, :, 1])
+
+        res = np.interp(res, (res.min(), res.max()), (0, 255))
+        res = np.uint8(res)
+
+        self.saveVariable(self.current_path, '', '', res)
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPicByImg_fun(l_hpf, 0.5, self.graphicsViewRight)
+        self.showPicByImg_fun(res, 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     def smoothFilterNoLinear_event(self):
         print("平滑滤波——非线性")
-        srcImage = cv2.imread(self.current_img, cv2.IMREAD_ANYCOLOR)
-        b, g, r = cv2.split(srcImage)  # 先将bgr格式拆分
-        srcimg = cv2.merge([r, g, b])
-        # 双边滤波
-        img_bilater = cv2.bilateralFilter(srcimg, 9, 75, 75)
+        img = cv2.imread(self.current_path, cv2.IMREAD_ANYCOLOR)
+        out = cv2.medianBlur(img, 3)  # 中值滤波函数
+        self.saveVariable(self.current_path, '', '', out)
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPicByImg_fun(img_bilater, 0.5, self.graphicsViewRight)
+        self.showPicByImg_fun(out, 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     def smoothFilterLinear_event(self):
         print("平滑滤波-线性")
-        srcImage = cv2.imread(self.current_img)
-        b, g, r = cv2.split(srcImage)  # 先将bgr格式拆分
-        srcimg = cv2.merge([r, g, b])
-        # 盒式滤波
-        box_img = cv2.boxFilter(srcimg, -1, (5, 5))
+        img = cv2.imread(self.current_path,cv2.IMREAD_UNCHANGED)
+        kernel = np.ones((3, 3), np.float32) / 9
+        out = cv2.filter2D(img, -1, kernel)  # ddepth=-1 表示输出和原图像深度（通道数）相同
+        self.saveVariable(self.current_path, '', '', out)
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPicByImg_fun(box_img, 0.5, self.graphicsViewRight)
+        self.showPicByImg_fun(out, 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     def sharpenFilterNoLinear_event(self):
         print("锐化滤波-非线性")
-        srcImage = cv2.imread(self.current_img, cv2.IMREAD_ANYCOLOR)
-        b, g, r = cv2.split(srcImage)  # 先将bgr格式拆分
-        srcimg = cv2.merge([r, g, b])
-        # 中值滤波
-        img_median = cv2.medianBlur(srcimg, 5)
+        img = cv2.imread(self.current_path, cv2.IMREAD_ANYCOLOR)
+        kernel = np.float32([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+        out = cv2.filter2D(img, -1, kernel)
+        self.saveVariable(self.current_path, '', '', out)
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPicByImg_fun(img_median, 0.5, self.graphicsViewRight)
+        self.showPicByImg_fun(out, 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     def sharpenFilterLinear_event(self):
         print("锐化滤波-线性")
         # 锐化滤波
-        newimage = Image.open(self.current_img)
-        imsharpen = newimage.filter(ImageFilter.SHARPEN)
-        imsharpen.save('./cache/result.png')
+        img = cv2.imread(self.current_path,cv2.IMREAD_UNCHANGED)
+        kernel = np.float32([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+        out = cv2.filter2D(img, -1, kernel)
+        self.saveVariable(self.current_path, '', '', out)
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPic_fun('./cache/result.png', 0.5, self.graphicsViewRight)
+        self.showPicByImg_fun(out, 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     #end 滤波
 
 
@@ -330,76 +831,129 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return pv
     def GaussNoise_event(self):
         print("高斯噪声")
-        srcImage = cv2.imread(self.current_img)
-        b, g, r = cv2.split(srcImage)  # 先将bgr格式拆分
-        srcimg = cv2.merge([r, g, b])
-        gaussian_noise_img = skimage.util.random_noise(srcimg, mode='gaussian')*255
-        cv2.imwrite('./cache/gaussian_noise_img.jpg', gaussian_noise_img)
+
+        def _gasuss_noise(image, mean=0.0, var=0.1):
+            copyImage = image.copy()
+            noise = np.random.normal(loc=mean, scale=var, size=copyImage.shape)
+            copyImage = np.array(copyImage / 255, dtype=float)
+            out = copyImage + noise
+            out = np.clip(out, 0.0, 1.0)
+            out = np.uint8(out * 255)
+            return out
+        img = cv2.imread(self.current_path, cv.IMREAD_UNCHANGED)
+        blur = _gasuss_noise(image=img)
+        cv2.imwrite('./cache/gaussian_noise_img.jpg', blur)
+        #self.target_img = self.cv2file(blur)
+        # srcImage = cv2.imread(self.current_path)
+        # b, g, r = cv2.split(srcImage)  # 先将bgr格式拆分
+        # srcimg = cv2.merge([r, g, b])
+        # gaussian_noise_img = skimage.util.random_noise(srcimg, mode='gaussian')*255
+        # cv2.imwrite('./cache/gaussian_noise_img.jpg', gaussian_noise_img)
+        self.saveVariable(self.current_path, '', './cache/gaussian_noise_img.jpg', '')
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPic_fun("./cache/gaussian_noise_img.jpg", 0.5, self.graphicsViewRight)
+        self.showPic_fun("./cache/gaussian_noise_img.jpg", 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     #椒盐噪声
     def jiaoYanNoise_event(self):
         print("椒盐噪声")
-        image = cv2.imread(self.current_img)
-        b, g, r = cv2.split(image)  # 先将bgr格式拆分
-        img = cv2.merge([r, g, b])
-        m = int((img.shape[0] * img.shape[1]) * 0.01)
-        for a in range(m):
-            i = int(np.random.random() * img.shape[1])
-            j = int(np.random.random() * img.shape[0])
-            if img.ndim == 2:
-                img[j, i] = 255
-            elif img.ndim == 3:
-                img[j, i, 0] = 255
-                img[j, i, 1] = 255
-                img[j, i, 2] = 255
-        for b in range(m):
-            i = int(np.random.random() * img.shape[1])
-            j = int(np.random.random() * img.shape[0])
-            if img.ndim == 2:
-                img[j, i] = 0
-            elif img.ndim == 3:
-                img[j, i, 0] = 0
-                img[j, i, 1] = 0
-                img[j, i, 2] = 0
+        img = cv2.imread(self.current_path,cv.IMREAD_UNCHANGED)
+        # b, g, r = cv2.split(image)  # 先将bgr格式拆分
+        # img = cv2.merge([r, g, b])
+        # m = int((img.shape[0] * img.shape[1]) * 0.01)
+        # for a in range(m):
+        #     i = int(np.random.random() * img.shape[1])
+        #     j = int(np.random.random() * img.shape[0])
+        #     if img.ndim == 2:
+        #         img[j, i] = 255
+        #     elif img.ndim == 3:
+        #         img[j, i, 0] = 255
+        #         img[j, i, 1] = 255
+        #         img[j, i, 2] = 255
+        # for b in range(m):
+        #     i = int(np.random.random() * img.shape[1])
+        #     j = int(np.random.random() * img.shape[0])
+        #     if img.ndim == 2:
+        #         img[j, i] = 0
+        #     elif img.ndim == 3:
+        #         img[j, i, 0] = 0
+        #         img[j, i, 1] = 0
+        #         img[j, i, 2] = 0
+        # 信噪比
+        SNR = 0.6
+
+        # 计算总像素数目 SP， 得到要加噪的像素数目 NP = SP * (1-SNR)
+        noiseNum = int((1 - SNR) * img.shape[0] * img.shape[1])
+
+        # 于随机位置将像素值随机指定为0或者255
+        for i in range(noiseNum):
+
+            randX = np.random.random_integers(0, img.shape[0] - 1)
+
+            randY = np.random.random_integers(0, img.shape[1] - 1)
+
+            if np.random.random_integers(0, 1) == 0:
+
+                img[randX, randY] = 0
+
+            else:
+
+                img[randX, randY] = 255
+        self.saveVariable(self.current_path, '', '', img)
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPicByImg_fun(img, 0.5, self.graphicsViewRight)
+        self.showPicByImg_fun(img, 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     #斑点噪声
     def splotNoise_event(self):
         print("斑点噪声")
-        image = cv2.imread(self.current_img)
-        b, g, r = cv2.split(image)  # 先将bgr格式拆分
-        img = cv2.merge([r, g, b])
-        speckle_noise_img = skimage.util.random_noise(img, mode='speckle')*255
-        cv2.imwrite('./cache/speckle_noise_img.jpg', speckle_noise_img)
+        img = cv2.imread(self.current_path,cv.IMREAD_UNCHANGED)
+        def _speckle_noise(image, mean=0.0, var=0.2):
+            copyImage = image.copy()
+            noise = np.random.normal(loc=mean, scale=var, size=copyImage.shape)
+            copyImage = np.array(copyImage / 255, dtype=float)
+            out = (1 + noise) * copyImage
+            out = np.clip(out, 0.0, 1.0)
+            out = np.uint8(out * 255)
+            return out
+        blur = _speckle_noise(image=img)
+        # b, g, r = cv2.split(image)  # 先将bgr格式拆分
+        # img = cv2.merge([r, g, b])
+        # speckle_noise_img = skimage.util.random_noise(img, mode='speckle')*255
+        cv2.imwrite('./cache/speckle_noise_img.jpg', blur)
+        self.saveVariable(self.current_path, '', './cache/speckle_noise_img.jpg', '')
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPic_fun('./cache/speckle_noise_img.jpg', 0.5, self.graphicsViewRight)
+        self.showPic_fun('./cache/speckle_noise_img.jpg', 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     #泊松噪声
     def poissonNoise_event(self):
         print("泊松噪声")
-        image = cv2.imread(self.current_img)
-        b, g, r = cv2.split(image)  # 先将bgr格式拆分
-        img = cv2.merge([r, g, b])
-        poisson_noise_img = skimage.util.random_noise(img, mode='poisson', seed=None, clip=True)*255
-        cv2.imwrite('./cache/poisson_noise_img.jpg', poisson_noise_img)
+        img = cv2.imread(self.current_path,cv.IMREAD_UNCHANGED)
+        img = img.astype(float)
+        # noisy image
+        noise_mask = np.random.poisson(img / 255.0 * 0.8) / 0.8 * 255
+        # noise_mask = np.random.poisson(img)
+
+        noisy_img = img + noise_mask
+        noisy_img = noisy_img.astype(np.uint8)
+        # b, g, r = cv2.split(image)  # 先将bgr格式拆分
+        # img = cv2.merge([r, g, b])
+        # poisson_noise_img = skimage.util.random_noise(img, mode='poisson', seed=None, clip=True)*255
+        cv2.imwrite('./cache/poisson_noise_img.jpg', noisy_img)
+        self.saveVariable(self.current_path, '', './cache/poisson_noise_img.jpg', '')
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPic_fun('./cache/poisson_noise_img.jpg', 0.5, self.graphicsViewRight)
+        self.showPic_fun('./cache/poisson_noise_img.jpg', 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
     #end 噪声
 
     #start 变换
@@ -407,28 +961,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     #傅里叶变换
     def fourierTransform_event(self):
         print("傅里叶变换")
-        img = cv2.imread(self.current_img.replace("\n",""))
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        img = cv2.imread(self.current_path.replace("\n",""))
+        img = np.mean(img[..., :min(3, img.shape[-1])], axis=2)
         f = np.fft.fft2(img)
-        fshift = np.fft.fftshift(f)
-        result = 20 * np.log(np.abs(fshift))
+        fshift = np.fft.fftshift(f)  # 得到结果为复数
+        magnitude_spectrum = 10 * np.log(np.abs(fshift))  # 先取绝对值，表示取模。取对数，将数据范围变小
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
         self.graphicsViewRight.setHidden(False)#显示傅里叶变换后的图片
-        x = result.shape[1]  # 获取图像大小
-        y = result.shape[0]
-        cv2.imwrite("cache/fuliye.jpg",result)
+        x = magnitude_spectrum.shape[1]  # 获取图像大小
+        y = magnitude_spectrum.shape[0]
+        cv2.imwrite("cache/fuliye.jpg",magnitude_spectrum)
         result = cv2.imread("cache/fuliye.jpg")
-        self.zoomscale = 0.5  # 图片放缩尺度
-        frame = QImage(result, x, y, QImage.Format_Grayscale8)
-        pix = QPixmap.fromImage(frame)
-        self.item = QGraphicsPixmapItem(pix)  # 创建像素图元
-        self.item.setScale(self.zoomscale)
-        self.scene = QGraphicsScene()  # 创建场景
-        self.scene.addItem(self.item)
-        self.graphicsViewRight.setScene(self.scene)  # 将场景添加至视图
+        self.saveVariable(self.current_path, '', "cache/fuliye.jpg", '')
+        self.showPic_fun("cache/fuliye.jpg",1,self.graphicsViewRight)
+        # self.zoomscale = 1  # 图片放缩尺度
+        # frame = QImage(result, x, y, QImage.Format_Grayscale8)
+        # pix = QPixmap.fromImage(frame)
+        # self.item = QGraphicsPixmapItem(pix)  # 创建像素图元
+        # self.item.setScale(self.zoomscale)
+        # self.scene = QGraphicsScene()  # 创建场景
+        # self.scene.addItem(self.item)
+        # self.graphicsViewRight.setScene(self.scene)  # 将场景添加至视图
     #离散余弦变换
 
     # DCT weight
@@ -444,42 +1000,47 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return ((2 * cu * cv / T) * np.cos((2 * x + 1) * u * theta) * np.cos((2 * y + 1) * v * theta))
     def DCTTransformer_event(self):
         print("离散余弦变换")
-        img = cv2.imread(self.current_img,0).astype(np.float32)
-        Y = cv2.dct(img)  # 离散余弦变换
-        for i in range(0, 240):
-            for j in range(0, 320):
-                if i > 100 or j > 100:
-                    Y[i, j] = 0
-
+        img = cv2.imread(self.current_path).astype(np.float32)
+        print("lisan")
+        # Y = cv2.dct(img)  # 离散余弦变换
+        # for i in range(0, 240):
+        #     for j in range(0, 320):
+        #         if i > 100 or j > 100:
+        #             Y[i, j] = 0
+        img = np.mean(img[..., :min(3, img.shape[-1])], axis=2)
+        print('img.shape: ', img.shape)
+        h, w = img.shape[:3]
+        img = img[:(h // 2 * 2), :(w // 2 * 2)]
+        img = img.astype(np.float)
+        #     # 进行离散余弦变换
+        img_dct = cv.dct(img)
+        #     # 进行log处理
+        img_dct_log = np.log(abs(img_dct))
+        cv2.imwrite("cache/dct.jpg", img_dct_log*32)
+        self.saveVariable(self.current_path, '', "cache/dct.jpg", '')
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPicByImg_fun(Y, 0.5, self.graphicsViewRight)
+        self.showPic_fun("cache/dct.jpg", 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
 
     #Radom变换
     def RadomTransformer_event(self):
         print("Radon变换")
-        image = cv2.imread(self.current_img, 1)
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        img_canny = cv2.Canny(gray, 100, 150)
-        rows, cols = img_canny.shape
-        angles = range(0, 180, 1)
-        height = len(angles)
-        width = cols
-        sinogram = np.zeros((height, width))
-        for index, alpha in enumerate(angles):
-            M = cv2.getRotationMatrix2D((cols / 2, rows / 2), alpha, 1)
-            rotated = cv2.warpAffine(img_canny, M, (cols, rows))
-            sinogram[index] = rotated.sum(axis=0)
+        img= cv2.imread(self.current_path, cv2.IMREAD_UNCHANGED)
+        from skimage.transform import radon
+        grayImage = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        theta = np.linspace(0., 180., max(grayImage.shape), endpoint=False)
+        sinogram = radon(grayImage, theta, circle=False)
         cv2.imwrite('./cache/RadomTransformer.png', sinogram)
+        self.saveVariable(self.current_path, '', './cache/RadomTransformer.png', '')
         self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showPic_fun("./cache/RadomTransformer.png", 0.5, self.graphicsViewRight)
+        self.showPic_fun("./cache/RadomTransformer.png", 1, self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
 
     #end 变换
 
@@ -488,49 +1049,80 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     #放大图片
     def zoomUp_event(self):
         print("放大")
-        if (self.current_img == None):
+        if (self.current_path == None):
             QMessageBox.warning(self, "提示", "您还没选择图片唉！", QMessageBox.Yes)
             return
         print("zoomscale:",self.zoomscale)
-        if(self.zoomscale>=0.72):
+        if(self.zoomscale>=1.7):
             QMessageBox.warning(self, "提示", "图片够大了！", QMessageBox.Yes)
         else:
-            self.showPic_fun(self.current_img,self.zoomscale+0.02,self.graphicsViewCenter)
+            # self.showPic_fun(self.current_path,self.zoomscale+0.02,self.graphicsViewCenter)
+            # #self.showPic_fun(self.current_path, self.zoomscale + 0.02, self.graphicsViewLeft)
+            img = cv2.imread(self.current_path.replace('\n', ''))  # 读取图像
+            x = img.shape[1]  # 获取图像大小
+            y = img.shape[0]
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 转换图像通道
+            self.zoomscale += 0.02  # 图片放缩尺度
+            frame = QImage(img, x, y, QImage.Format_RGB888)
+            pix = QPixmap.fromImage(frame)
+            self.item = QGraphicsPixmapItem(pix)  # 创建像素图元
+            self.item.setScale(self.zoomscale)
+            self.scene = QGraphicsScene()  # 创建场景
+            self.scene.addItem(self.item)
+            self.graphicsViewCenter.setScene(self.scene)  # 将场景添加至视图
+            self.graphicsViewLeft.setScene(self.scene)  # 将场景添加至视图
     #缩小图片
     def zoomDown_event(self):
         print("缩小")
-        if(self.current_img==None):
+        if(self.current_path==None):
             QMessageBox.warning(self, "提示", "您还没选择图片唉！", QMessageBox.Yes)
             return
         if(self.zoomscale<=0.3):
             QMessageBox.warning(self, "提示", "够小了！", QMessageBox.Yes)
         else:
-            self.showPic_fun(self.current_img, self.zoomscale - 0.02, self.graphicsViewCenter)
+            # self.showPic_fun(self.current_path, self.zoomscale - 0.02, self.graphicsViewCenter)
+            # #self.showPic_fun(self.current_path, self.zoomscale - 0.02, self.graphicsViewLeft)
+            img = cv2.imread(self.current_path.replace('\n', ''))  # 读取图像
+            x = img.shape[1]  # 获取图像大小
+            y = img.shape[0]
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 转换图像通道
+            self.zoomscale -= 0.02  # 图片放缩尺度
+            frame = QImage(img, x, y, QImage.Format_RGB888)
+            pix = QPixmap.fromImage(frame)
+            self.item = QGraphicsPixmapItem(pix)  # 创建像素图元
+            self.item.setScale(self.zoomscale)
+            self.scene = QGraphicsScene()  # 创建场景
+            self.scene.addItem(self.item)
+            self.graphicsViewCenter.setScene(self.scene)  # 将场景添加至视图
+            self.graphicsViewLeft.setScene(self.scene)  # 将场景添加至视图
     #灰度
     def grayLevel_event(self):
         print("灰度")
-        if(self.current_img==None):
+        if(self.current_path==None):
             QMessageBox.warning(self, "提示", "还没有选择图片！", QMessageBox.Yes)
             return
         self.graphicsViewCenter.setHidden(True)#隐藏中间显示区域
         self.closeLightSlider(True)
         self.graphicsViewRight.setHidden(False)
-        self.showGrayPic_fun(self.current_img,0.5,self.graphicsViewRight)
+        self.showGrayPic_fun(self.current_path,1,self.graphicsViewRight)
         self.graphicsViewLeft.setHidden(False)
-        self.showPic_fun(self.current_img, 0.5, self.graphicsViewLeft)
-    #亮度调节 TODO
+        self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+    #亮度调节
     def lightSlider_event(self):
-        img = cv2.imread(self.current_img.replace('\n', ''))  # 读取图像
+        img2 = cv2.imread(self.current_path.replace('\n', ''),cv2.IMREAD_UNCHANGED)  # 读取图像
+        img=img2
         x = img.shape[1]  # 获取图像大小
         y = img.shape[0]
-        img_t = cv2.cvtColor(img, cv.COLOR_BGR2HSV)
-        h, s, v = cv2.split(img_t)
-        # 增加图像亮度
-        v1 = np.clip(cv2.add(self.lightSlider.value()* v, 0), 0, 255)
-        img = np.uint8(cv2.merge((h, s, v1)))
-        img = cv2.cvtColor(img, cv2.COLOR_HSV2RGB)  # 转换图像通道
-        self.zoomscale = self.zoomscale  # 图片放缩尺度
-        frame = QImage(img, x, y, QImage.Format_RGB888)
+        print(self.lightSlider.value())
+        # rows, cols, chunnel = img1.shape
+        # blank = np.zeros([rows, cols, chunnel], img1.dtype)
+        # dst = cv2.addWeighted(img1, 1, blank, -0.3, self.lightSlider.value())
+        value = self.lightSlider.value() * 1.0 / 10
+        rows, cols, channels = img.shape
+        blank = np.zeros([rows, cols, channels], img.dtype)
+        res = cv.addWeighted(img, value, blank, 1, 3)
+        self.zoomscale = 1 # 图片放缩尺度
+        frame = QImage(res, x, y, QImage.Format_RGB888)
         pix = QPixmap.fromImage(frame)
         self.item = QGraphicsPixmapItem(pix)  # 创建像素图元
         self.item.setScale(self.zoomscale)
@@ -539,10 +1131,80 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.graphicsViewCenter.setScene(self.scene)  # 将场景添加至视图
     def lightLevel_event(self):
         print("亮度")
+        img = cv2.imread(self.current_path.replace('\n', ''), cv2.IMREAD_UNCHANGED)  # 读取图像
+        #value = self.horizontalSlider.value()
+        value, ok = QInputDialog.getText(self, '亮度', '请输入亮度值', QLineEdit.Normal, '10')
+        value = np.int(value.replace(' ', '')) * 1.0 / 10
+        x = img.shape[1]  # 获取图像大小
+        y = img.shape[0]
+        rows, cols, channels = img.shape
+        blank = np.zeros([rows, cols, channels], img.dtype)
+        res = cv.addWeighted(img, value, blank, 1, 3)
+        self.zoomscale = 1  # 图片放缩尺度
+        frame = QImage(res, x, y, QImage.Format_RGB888)
+        pix = QPixmap.fromImage(frame)
+        self.item = QGraphicsPixmapItem(pix)  # 创建像素图元
+        self.item.setScale(self.zoomscale)
+        self.scene = QGraphicsScene()  # 创建场景
+        self.scene.addItem(self.item)
+        self.graphicsViewLeft.setScene(self.scene)  # 将场景添加至视图
+        self.graphicsViewCenter.setScene(self.scene)  # 将场景添加至视图
+
     #旋转功能
+    def rotate90_event(self):
+        img = cv2.imread(self.current_path.replace("\n", ""),cv2.IMREAD_UNCHANGED)
+        img_rotate = np.rot90(img, 1)
+        self.current_idx += 1
+        self.workIdx += 1
+        self.showCount.setText('{}/{}'.format(self.workIdx + 1, len(self.workCache)))
+        cv2.imwrite("./cache/tranformer_{}.jpg".format(self.current_idx), img_rotate)
+        self.current_path = "./cache/tranformer_{}.jpg".format(self.current_idx)
+        self.workCache.append(self.current_path)  # 加入工作区缓存
+        # cv2.imwrite("cache/rotate90.jpg",img_rotate)
+        # self.current_path="cache/rotate90.jpg"
+        #self.showPicByImg_fun(img_rotate,1,self.graphicsViewCenter)
+        x = img_rotate.shape[1]  # 获取图像大小
+        y = img_rotate.shape[0]
+        img = cv2.cvtColor(img_rotate, cv2.COLOR_BGR2RGB)  # 转换图像通道
+        self.zoomscale = 1  # 图片放缩尺度
+        frame = QImage(img, x, y, QImage.Format_RGB888)
+        pix = QPixmap.fromImage(frame)
+        self.item = QGraphicsPixmapItem(pix)  # 创建像素图元
+        self.item.setScale(self.zoomscale)
+        self.scene = QGraphicsScene()  # 创建场景
+        self.scene.addItem(self.item)
+        self.graphicsViewCenter.setScene(self.scene)  # 将场景添加至视图
+        self.graphicsViewLeft.setScene(self.scene)  # 将场景添加至视图
+
+    # 逆时针旋转90度
+    def rotate270_event(self):
+        img = cv2.imread(self.current_path.replace("\n", ""), cv2.IMREAD_UNCHANGED)
+        img_rotate = np.rot90(img, 3)
+        self.current_idx += 1
+        self.workIdx += 1
+        self.showCount.setText('{}/{}'.format(self.workIdx + 1, len(self.workCache)))
+        cv2.imwrite("./cache/tranformer_{}.jpg".format(self.current_idx), img_rotate)
+        self.current_path = "./cache/tranformer_{}.jpg".format(self.current_idx)
+        self.workCache.append(self.current_path)  # 加入工作区缓存f
+        # cv2.imwrite("cache/rotate90.jpg", img_rotate)
+        # self.current_path = "cache/rotate90.jpg"
+        # self.showPicByImg_fun(img_rotate,1,self.graphicsViewCenter)
+        x = img_rotate.shape[1]  # 获取图像大小
+        y = img_rotate.shape[0]
+        img = cv2.cvtColor(img_rotate, cv2.COLOR_BGR2RGB)  # 转换图像通道
+        self.zoomscale = 1  # 图片放缩尺度
+        frame = QImage(img, x, y, QImage.Format_RGB888)
+        pix = QPixmap.fromImage(frame)
+        self.item = QGraphicsPixmapItem(pix)  # 创建像素图元
+        self.item.setScale(self.zoomscale)
+        self.scene = QGraphicsScene()  # 创建场景
+        self.scene.addItem(self.item)
+        self.graphicsViewCenter.setScene(self.scene)  # 将场景添加至视图
+        self.graphicsViewLeft.setScene(self.scene)  # 将场景添加至视图
+
     def rotate_event(self):
         print("旋转")
-        img = cv2.imread(self.current_img.replace("\n",""))
+        img = cv2.imread(self.current_path.replace("\n",""))
 
         h, w = img.shape[:2]
         center = (w // 2, h // 2)
@@ -554,7 +1216,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         x = img.shape[1]  # 获取图像大小
         y = img.shape[0]
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 转换图像通道
-        self.zoomscale = 0.6  # 图片放缩尺度
+        self.zoomscale =1  # 图片放缩尺度
         frame = QImage(img, x, y, QImage.Format_RGB888)
         pix = QPixmap.fromImage(frame)
         self.item = QGraphicsPixmapItem(pix)  # 创建像素图元
@@ -562,9 +1224,49 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.scene = QGraphicsScene()  # 创建场景
         self.scene.addItem(self.item)
         self.graphicsViewCenter.setScene(self.scene)  # 将场景添加至视图
-    #截图功能 TODO
+    #截图功能
     def printScreen_event(self):
         print("截图")
+        items = ["原图片自定义截图", "鼠标截图"]
+        value, ok = QInputDialog.getItem(self, "截图", "请选择操作类型:", items, 0, False)
+        if value == "原图片自定义截图":
+            img = Image.open(self.current_path)
+            img_size = img.size
+            value, ok = QInputDialog.getText(self, '截图', '请输入截取宽、高的百分比', QLineEdit.Normal, '0.8 0.8')
+            c, b = map(float, value.split())
+            h = img_size[1]  # 图片高度
+            w = img_size[0]  # 图片宽度
+            x = 0.2 * w
+            y = 0.2 * h
+            w = c * w
+            h = b * h
+            out = img.crop((x, y, x + w, y + h))
+            out.save('./cache/screenthand.jpg')
+            self.saveVariable(self.current_path, '', './cache/screenthand.jpg', '')
+            self.graphicsViewCenter.setHidden(True)  # 隐藏中间显示区域
+            self.closeLightSlider(True)
+            self.graphicsViewRight.setHidden(False)
+            self.showPic_fun('./cache/screenthand.jpg', 1, self.graphicsViewRight)
+            self.graphicsViewLeft.setHidden(False)
+            self.showPic_fun(self.current_path, 1, self.graphicsViewLeft)
+        elif value == "鼠标截图":
+            self.screenshot = ScreenShotsWin()
+            self.screenshot.showFullScreen()
+            # self.saveVariable(self.current_path, '', 'cache/screenthand.jpg', '')
+            # imghand = cv2.imread('cache/screenthand.jpg',cv2.IMREAD_UNCHANGED)
+            # x = imghand.shape[1]  # 获取图像大小
+            # y = imghand.shape[0]
+            # img = cv2.cvtColor(imghand, cv2.COLOR_BGR2RGB)  # 转换图像通道
+            # self.zoomscale = 1  # 图片放缩尺度
+            # frame = QImage(img, x, y, QImage.Format_RGB888)
+            # pix = QPixmap.fromImage(frame)
+            # self.item = QGraphicsPixmapItem(pix)  # 创建像素图元
+            # self.item.setScale(self.zoomscale)
+            # self.scene = QGraphicsScene()  # 创建场景
+            # self.scene.addItem(self.item)
+            # self.graphicsViewRight.setScene(self.scene)  # 将场景添加至视图
+        else :
+            return
 
     def RGB2HSI(rgb_img):
         """
@@ -675,9 +1377,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lightSlider.setHidden(flag)
         self.rotateThate.setHidden(flag)
         self.rotateSlider.setHidden(flag)
+        self.rightLeftButton.setHidden(not flag)
+        self.leftRightButton.setHidden(not flag)
     #显示灰度图像
     def showGrayPic_fun(self, path, zoomscale, desPosition):
-        img = cv2.imread(path.replace("\n",""))  # 读取图像
+        #显示下一个上一个、个数按钮
+        self.next.setHidden(False)
+        self.back.setHidden(False)
+        self.label_2.setHidden(False)
+        self.label_3.setHidden(False)
+        self.showCount.setHidden(False)
+        self.showCount.setText('{}/{}'.format(self.workIdx + 1, len(self.workCache)))
+        if path != '':
+            img = cv2.imread(path.replace('\n', ''))  # 读取图像
+        else:
+            return
         x = img.shape[1]  # 获取图像大小
         y = img.shape[0]
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # 转换图像通道
@@ -691,7 +1405,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         desPosition.setScene(self.scene)  # 将场景添加至视图
     # 显示图片
     def showPic_fun(self, path, zoomscale, desPosition):
-        img = cv2.imread(path.replace('\n',''))  # 读取图像
+        # 显示下一个上一个、个数按钮
+        self.next.setHidden(False)
+        self.back.setHidden(False)
+        self.label_2.setHidden(False)
+        self.label_3.setHidden(False)
+        self.showCount.setHidden(False)
+        self.showCount.setText('{}/{}'.format(self.workIdx + 1, len(self.workCache)))
+        if path!='':
+            img = cv2.imread(path.replace('\n',''))  # 读取图像
+        else:
+            return
         x = img.shape[1]  # 获取图像大小
         y = img.shape[0]
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 转换图像通道
@@ -704,6 +1428,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.scene.addItem(self.item)
         desPosition.setScene(self.scene)  #将场景添加至视图
     def showPicByImg_fun(self, img, zoomscale, desPosition):
+        # 显示下一个上一个、个数按钮
+        self.next.setHidden(False)
+        self.back.setHidden(False)
+        self.label_2.setHidden(False)
+        self.label_3.setHidden(False)
+        self.showCount.setHidden(False)
+        self.showCount.setText('{}/{}'.format(self.workIdx + 1, len(self.workCache)))
+        if img=='':
+            return
         x = img.shape[1]  # 获取图像大小
         y = img.shape[0]
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 转换图像通道
@@ -716,32 +1449,89 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.scene.addItem(self.item)
         desPosition.setScene(self.scene)  #将场景添加至视图
     def setHistory1_event(self):
-        self.current_img = self.history1.text().replace("\n","")
+        self.current_path = self.history1.text().replace("\n","")
+        self.workCache.append(self.current_path)
+        self.workIdx +=1
         self.current_idx = len(self.source_img_list)
-        self.source_img_list.append(self.current_img)
+        self.source_img_list.append(self.current_path)
         self.graphicsViewCenter.setHidden(False)
         self.graphicsViewLeft.setHidden(True)
         self.graphicsViewRight.setHidden(True)
+        # 隐藏下一个上一个、个数按钮
+        self.next.setHidden(True)
+        self.back.setHidden(True)
+        self.label_2.setHidden(True)
+        self.label_3.setHidden(True)
+        self.showCount.setHidden(True)
         self.closeLightSlider(False)
-        self.showPic_fun(self.current_img, 0.6, self.graphicsViewCenter)
+        img = cv2.imread(self.current_path.replace('\n', ''))  # 读取图像
+        x = img.shape[1]  # 获取图像大小
+        y = img.shape[0]
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 转换图像通道
+        self.zoomscale = 1  # 图片放缩尺度
+        frame = QImage(img, x, y, QImage.Format_RGB888)
+        pix = QPixmap.fromImage(frame)
+        self.item = QGraphicsPixmapItem(pix)  # 创建像素图元
+        self.item.setScale(self.zoomscale)
+        self.scene = QGraphicsScene()  # 创建场景
+        self.scene.addItem(self.item)
+        self.graphicsViewCenter.setScene(self.scene)  # 将场景添加至视图
     def setHistory2_event(self):
-        self.current_img = self.history2.text().replace("\n","")
+        self.current_path = self.history2.text().replace("\n","")
+        self.workCache.append(self.current_path)
+        self.workIdx += 1
         self.current_idx = len(self.source_img_list)
-        self.source_img_list.append(self.current_img)
+        self.source_img_list.append(self.current_path)
+        # 隐藏下一个上一个、个数按钮
+        self.next.setHidden(True)
+        self.back.setHidden(True)
+        self.label_2.setHidden(True)
+        self.label_3.setHidden(True)
+        self.showCount.setHidden(True)
         self.graphicsViewCenter.setHidden(False)
         self.graphicsViewLeft.setHidden(True)
         self.graphicsViewRight.setHidden(True)
         self.closeLightSlider(False)
-        self.showPic_fun(self.current_img, 0.6, self.graphicsViewCenter)
+        img = cv2.imread(self.current_path.replace('\n', ''))  # 读取图像
+        x = img.shape[1]  # 获取图像大小
+        y = img.shape[0]
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 转换图像通道
+        self.zoomscale = 1  # 图片放缩尺度
+        frame = QImage(img, x, y, QImage.Format_RGB888)
+        pix = QPixmap.fromImage(frame)
+        self.item = QGraphicsPixmapItem(pix)  # 创建像素图元
+        self.item.setScale(self.zoomscale)
+        self.scene = QGraphicsScene()  # 创建场景
+        self.scene.addItem(self.item)
+        self.graphicsViewCenter.setScene(self.scene)  # 将场景添加至视图
     def setHistory3_event(self):
-        self.current_img = self.history3.text().replace("\n","")
+        self.current_path = self.history3.text().replace("\n","")
+        self.workCache.append(self.current_path)
+        self.workIdx += 1
         self.current_idx = len(self.source_img_list)
-        self.source_img_list.append(self.current_img)
+        self.source_img_list.append(self.current_path)
+        # 隐藏下一个上一个、个数按钮
+        self.next.setHidden(True)
+        self.back.setHidden(True)
+        self.label_2.setHidden(True)
+        self.label_3.setHidden(True)
+        self.showCount.setHidden(True)
         self.graphicsViewCenter.setHidden(False)
         self.graphicsViewLeft.setHidden(True)
         self.graphicsViewRight.setHidden(True)
         self.closeLightSlider(False)
-        self.showPic_fun(self.current_img, 0.6, self.graphicsViewCenter)
+        img = cv2.imread(self.current_path.replace('\n', ''))  # 读取图像
+        x = img.shape[1]  # 获取图像大小
+        y = img.shape[0]
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 转换图像通道
+        self.zoomscale = 1 # 图片放缩尺度
+        frame = QImage(img, x, y, QImage.Format_RGB888)
+        pix = QPixmap.fromImage(frame)
+        self.item = QGraphicsPixmapItem(pix)  # 创建像素图元
+        self.item.setScale(self.zoomscale)
+        self.scene = QGraphicsScene()  # 创建场景
+        self.scene.addItem(self.item)
+        self.graphicsViewCenter.setScene(self.scene)  # 将场景添加至视图
 
     #打开图片
     def open_event(self):
@@ -749,26 +1539,44 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                         'Image files(*.jpg , *.png)')
         if openfile_name[0]:
             self.imgCache_add(openfile_name[0])#将读取到的图片路径加入到缓存中
-            self.current_img = openfile_name[0]
+            self.current_path = openfile_name[0]
+            self.workCache.append(self.current_path)
+            self.workIdx += 1
             self.current_idx = len(self.source_img_list)
-            self.source_img_list.append(self.current_img)
+            self.source_img_list.append(self.current_path)
+            self.next.setHidden(True)
+            self.back.setHidden(True)
+            self.label_2.setHidden(True)
+            self.label_3.setHidden(True)
+            self.showCount.setHidden(True)
             self.graphicsViewCenter.setHidden(False)
             self.graphicsViewLeft.setHidden(True)
             self.graphicsViewRight.setHidden(True)
             self.closeLightSlider(False)
-            self.showPic_fun(self.current_img,0.5,self.graphicsViewCenter)
+            img = cv2.imread(self.current_path.replace('\n', ''))  # 读取图像
+            x = img.shape[1]  # 获取图像大小
+            y = img.shape[0]
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 转换图像通道
+            self.zoomscale = 1  # 图片放缩尺度
+            frame = QImage(img, x, y, QImage.Format_RGB888)
+            pix = QPixmap.fromImage(frame)
+            self.item = QGraphicsPixmapItem(pix)  # 创建像素图元
+            self.item.setScale(self.zoomscale)
+            self.scene = QGraphicsScene()  # 创建场景
+            self.scene.addItem(self.item)
+            self.graphicsViewCenter.setScene(self.scene)  # 将场景添加至视图
         else:
             QMessageBox.warning(self,"提示","这个图片好像逃跑了！",QMessageBox.Yes)
     #保存图片
     def save_event(self):
-        if  not self.current_img:
+        if  not self.current_path:
             QMessageBox.warning(self,"提示","什么都没有，我保存什么？",QMessageBox.Yes)
             return
         file_path = QFileDialog.getSaveFileName(self, '选择保存位置', 'D:/Picture/*.png',
                                                 'Image files(*.png)')
         file_path = file_path[0]
         if file_path:
-            cv.imwrite(file_path, cv.imread(self.current_img))
+            cv.imwrite(file_path, cv.imread(self.current_path))
 
     def close_window(self):
         res = QMessageBox.warning(self, "退出系统", "是否确认退出", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
